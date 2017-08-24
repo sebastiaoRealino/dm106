@@ -29,5 +29,7 @@ namespace DM1106Proj.Models
         {
             return new ApplicationDbContext();
         }
+
+        public System.Data.Entity.DbSet<DM1106Proj.Models.Product> Products { get; set; }
     }
 }
