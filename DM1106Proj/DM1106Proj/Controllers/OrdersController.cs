@@ -39,15 +39,63 @@ namespace DM1106Proj.Controllers
 
                 return Ok(order);
             } else {
-                var msg = new HttpResponseMessage(HttpStatusCode.Unauthorized) { 
-                    ReasonPhrase = "Usuário não possui autorização para visualizar pedido!" 
+                var msg = new HttpResponseMessage(HttpStatusCode.Unauthorized) {
+                    Content = new StringContent("Usuário não possui autorização para visualizar pedido!"),
+                    ReasonPhrase = "Acesso não autorizado" 
                 };
                 return ResponseMessage(msg);
                 
             }
             
         }
+        // PATCH: api/Orders/5
+        [HttpPatch]
+        [ResponseType(typeof(void))]
+        public IHttpActionResult PatchOrder(int id)
+        {
+            Order order = db.Orders.Find(id);
+            if (User.IsInRole("ADMIN") || (order.userEmail == User.Identity.Name))
+            {
+                if (order.status != "fechado")
+                {
+                    if (order.freightRate == 0)
+                    {
+                        var msg = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                        {
+                            Content = new StringContent("Frete ainda não foi calculado!"),
+                            ReasonPhrase = "Erro no frete"
+                        };
+                        return ResponseMessage(msg);
+                    }
+                    else
+                    {
+                        order.status = "fechado";
+                        db.SaveChanges();
+                        var msg = new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent("Status do pedido foi alterado para: fechado"),
+                            ReasonPhrase = "Status alterado com sucesso!"
+                        };
+                        return ResponseMessage(msg);
+                    }
+                }
+                else
+                {
+                    var msg = new HttpResponseMessage(HttpStatusCode.NotModified)
+                    {
+                        Content = new StringContent("Pedido já se encontra fechado"),
+                        ReasonPhrase = "Pedido já fechado!"
+                    };
+                    return ResponseMessage(msg);
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
 
+            
+        }
         // PUT: api/Orders/5
         [ResponseType(typeof(void))]
         public IHttpActionResult PutOrder(int id, Order order)
@@ -116,15 +164,22 @@ namespace DM1106Proj.Controllers
         public IHttpActionResult DeleteOrder(int id)
         {
             Order order = db.Orders.Find(id);
-            if (order == null)
+            if (User.IsInRole("ADMIN") || (order.userEmail == User.Identity.Name))
             {
-                return NotFound();
+                if (order == null)
+                {
+                    return NotFound();
+                }
+
+                db.Orders.Remove(order);
+                db.SaveChanges();
+
+                return Ok(order);
             }
-
-            db.Orders.Remove(order);
-            db.SaveChanges();
-
-            return Ok(order);
+            else
+            {
+                return Unauthorized();
+            }
         }
 
         protected override void Dispose(bool disposing)
