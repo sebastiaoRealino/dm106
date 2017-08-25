@@ -87,15 +87,28 @@ namespace DM1106Proj.Controllers
         [ResponseType(typeof(Order))]
         public IHttpActionResult PostOrder(Order order)
         {
-            if (!ModelState.IsValid)
+            if (User.IsInRole("ADMIN") || User.IsInRole("USER"))
             {
-                return BadRequest(ModelState);
+                order.status = "novo";
+                order.totalWeight = 0;
+                order.freightRate = 0;
+                order.totalPrice = 0;
+                order.creationDate = DateTime.Now;
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                db.Orders.Add(order);
+                db.SaveChanges();
+
+                return CreatedAtRoute("DefaultApi", new { id = order.Id }, order);
             }
-
-            db.Orders.Add(order);
-            db.SaveChanges();
-
-            return CreatedAtRoute("DefaultApi", new { id = order.Id }, order);
+            else
+            {
+                return Unauthorized();
+            }
+            
         }
 
         // DELETE: api/Orders/5

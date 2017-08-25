@@ -329,15 +329,20 @@ namespace DM1106Proj.Controllers
             }
 
             var user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
-
             IdentityResult result = await UserManager.CreateAsync(user, model.Password);
 
-            if (!result.Succeeded)
+            if (result.Succeeded)
+            {
+                var currentUser = UserManager.FindByName(user.UserName);
+
+                var roleresult = UserManager.AddToRole(currentUser.Id, "USER");
+
+                return Ok();
+            }
+            else
             {
                 return GetErrorResult(result);
             }
-
-            return Ok();
         }
 
         // POST api/Account/RegisterExternal
