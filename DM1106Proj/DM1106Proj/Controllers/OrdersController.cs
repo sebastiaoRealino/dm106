@@ -39,7 +39,11 @@ namespace DM1106Proj.Controllers
 
                 return Ok(order);
             } else {
-                return Unauthorized();
+                var msg = new HttpResponseMessage(HttpStatusCode.Unauthorized) { 
+                    ReasonPhrase = "Usuário não possui autorização para visualizar pedido!" 
+                };
+                return ResponseMessage(msg);
+                
             }
             
         }
