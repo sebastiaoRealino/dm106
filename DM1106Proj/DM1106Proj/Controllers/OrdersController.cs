@@ -138,6 +138,7 @@ namespace DM1106Proj.Controllers
             if (User.IsInRole("ADMIN") || User.IsInRole("USER"))
             {
                 order.status = "novo";
+                order.userEmail = User.Identity.Name;
                 order.totalWeight = 0;
                 order.freightRate = 0;
                 order.totalPrice = 0;
