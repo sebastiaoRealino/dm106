@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using DM1106Proj.Models;
+using System.Diagnostics;
 
 namespace DM1106Proj.Controllers
 {
@@ -17,6 +18,7 @@ namespace DM1106Proj.Controllers
         private OrderContext db = new OrderContext();
 
         // GET: api/Orders
+        [Authorize(Roles = "ADMIN")]
         public IQueryable<Order> GetOrders()
         {
             return db.Orders;
@@ -27,12 +29,19 @@ namespace DM1106Proj.Controllers
         public IHttpActionResult GetOrder(int id)
         {
             Order order = db.Orders.Find(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
 
-            return Ok(order);
+            if (User.IsInRole("ADMIN") || (order.userEmail == User.Identity.Name))
+            {
+                if (order == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(order);
+            } else {
+                return Unauthorized();
+            }
+            
         }
 
         // PUT: api/Orders/5

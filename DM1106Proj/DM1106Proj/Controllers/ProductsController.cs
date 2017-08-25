@@ -17,6 +17,7 @@ namespace DM1106Proj.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/Products
+        [Authorize(Roles = "ADMIN")]
         public IQueryable<Product> GetProducts()
         {
             return db.Products;
